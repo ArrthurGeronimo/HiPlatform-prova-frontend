@@ -13,6 +13,7 @@ const global = {
       fontSize: '1rem',
       fontWeight: 400,
       //lineHeight: 1,
+      color: 'white',
       '& ul': {
         paddingLeft: '5px',
         listStyle: 'none',
