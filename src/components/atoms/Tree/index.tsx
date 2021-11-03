@@ -45,7 +45,7 @@ const TreeNode = ({ node, codeNode }) => {
 
   return (
     <Box as="li" padding="0.50rem 1.25rem">
-      <Flex align="center" onClick={(e) => setChildVisiblity((v) => !v)}>
+      <Flex align="center" onClick={() => setChildVisiblity((v) => !v)}>
         {hasChild && (
           <ChevronRightIcon
             transform={`rotate(${childVisible ? '90deg' : '0deg'})`}
