@@ -5,4 +5,7 @@ module.exports = {
     defaultLocale: 'pt-BR',
   },
   reactStrictMode: true,
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 }

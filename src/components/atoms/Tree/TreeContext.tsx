@@ -1,6 +1,12 @@
 import { UseDisclosureReturn } from '@chakra-ui/react'
-import { useState } from 'react'
-import { createContext, ReactNode, useContext } from 'react'
+import {
+  //  useEffect,
+  useState,
+  createContext,
+  ReactNode,
+  useContext,
+} from 'react'
+//import { setStorage, getStorage } from 'utils/helpers/SirStorage'
 
 interface SidebarDrawerProviderProps {
   children: ReactNode
@@ -15,7 +21,7 @@ export function SidebarDrawerProvider({
   data,
 }: SidebarDrawerProviderProps) {
   const [indeterminateKeys, setIndeterminateKeys] = useState(new Set())
-  const [selectedKeys, setSelectedKeys] = useState(new Set())
+  const [selectedKeys, setSelectedKeys] = useState(new Set([]))
 
   function takeIndeterminate(
     father,
