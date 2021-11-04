@@ -18,11 +18,11 @@ const SidebarDrawerContext = createContext({} as SidebarDrawerContextData)
 
 export function SidebarDrawerProvider({
   children,
-  data,
 }: SidebarDrawerProviderProps) {
   const [indeterminateKeys, setIndeterminateKeys] = useState(new Set())
   const [selectedKeys, setSelectedKeys] = useState(new Set([]))
 
+  /*
   async function takeIndeterminate(
     father,
     fatherLevel,
@@ -35,7 +35,7 @@ export function SidebarDrawerProvider({
       return
     }
     const splitCode = childrenCode.split('-')
-    /*
+   
     let nodeChecked = undefined
     let stop = false
     for (let i = 0; i < splitCode.length - 1; i++) {
@@ -62,7 +62,7 @@ export function SidebarDrawerProvider({
     if (stop) {
       return
     }
-    */
+   
     setIndeterminateKeys(
       (old) => new Set([...old].filter((x) => x !== fatherCode))
     )
@@ -106,6 +106,7 @@ export function SidebarDrawerProvider({
       childrenCode
     )
   }
+  */
 
   async function findTheParentAndTakeIndeterminate(code) {
     const codeSplit = code.split('-')
