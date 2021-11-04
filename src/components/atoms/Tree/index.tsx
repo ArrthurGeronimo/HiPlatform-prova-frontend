@@ -35,9 +35,10 @@ const TreeNode = ({ node, codeNode }) => {
     if (selectedKeys.has(codeNode)) {
       setIsIndeterminate(false)
       return setIsChecked(true)
-    }
-    if (indeterminateKeys.has(codeNode)) {
-      return setIsIndeterminate(true)
+    } else {
+      if (indeterminateKeys.has(codeNode)) {
+        return setIsIndeterminate(true)
+      }
     }
     setIsIndeterminate(false)
     setIsChecked(false)
@@ -49,6 +50,7 @@ const TreeNode = ({ node, codeNode }) => {
         {hasChild && (
           <ChevronRightIcon
             transform={`rotate(${childVisible ? '90deg' : '0deg'})`}
+            //onClick={() => setChildVisiblity((v) => !v)}
           />
         )}
         <Checkbox

@@ -17,6 +17,7 @@ const global = {
       '& ul': {
         paddingLeft: '5px',
         listStyle: 'none',
+        color: 'white',
       },
       '& li': {
         fontFamily: 'Roboto Condensed',
@@ -24,6 +25,7 @@ const global = {
         paddingTop: '5px',
         paddingBottom: '5px',
         paddingLeft: '10px',
+        color: 'white',
         '-webkit-box-sizing': 'border-box',
         '-moz-box-sizing': 'border-box',
         'box-sizing': 'border-box',
