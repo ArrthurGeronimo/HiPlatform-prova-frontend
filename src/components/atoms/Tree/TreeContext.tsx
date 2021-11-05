@@ -74,6 +74,7 @@ export function TreeProvider({ children, data }: TreeProviderProps) {
     for (let i = 0; i < father.children.length; i++) {
       const childrenId = father.children[i]
       const newChildren = dataRef[childrenId]
+      newChildren.indeterminate = false
       newChildren.checked = true
       setDataRef({ ...dataRef, [childrenId]: newChildren })
       const hasChild = dataRef[childrenId].children.length > 0 ? true : false
@@ -87,7 +88,10 @@ export function TreeProvider({ children, data }: TreeProviderProps) {
 
   async function onSelect(id) {
     const nodeSelected = dataRef[id]
-    dataRef[id].checked = !dataRef[id].checked
+    nodeSelected.indeterminate = false
+    nodeSelected.checked = true
+    setDataRef({ ...dataRef, [dataRef[id]]: nodeSelected })
+
     if (dataRef[id].checked) {
       checkChildren(nodeSelected)
       findTheParentAndPutIndeterminate(nodeSelected)
