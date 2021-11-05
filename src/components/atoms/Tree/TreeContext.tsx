@@ -89,9 +89,8 @@ export function TreeProvider({ children, data }: TreeProviderProps) {
   async function onSelect(id) {
     const nodeSelected = dataRef[id]
     nodeSelected.indeterminate = false
-    nodeSelected.checked = true
+    nodeSelected.checked = !nodeSelected.checked
     setDataRef({ ...dataRef, [dataRef[id]]: nodeSelected })
-
     if (dataRef[id].checked) {
       checkChildren(nodeSelected)
       findTheParentAndPutIndeterminate(nodeSelected)
