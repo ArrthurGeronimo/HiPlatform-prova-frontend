@@ -26,9 +26,9 @@ const global = {
         paddingBottom: '5px',
         paddingLeft: '10px',
         color: 'white',
-        '-webkit-box-sizing': 'border-box',
-        '-moz-box-sizing': 'border-box',
-        'box-sizing': 'border-box',
+        WebkitBoxSizing: 'border-box',
+        MozBoxSizing: 'border-box',
+        boxSizing: 'border-box',
       },
       '& li:before': {
         position: 'absolute',

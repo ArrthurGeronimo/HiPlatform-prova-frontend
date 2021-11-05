@@ -1,6 +1,6 @@
 import { UseDisclosureReturn } from '@chakra-ui/react'
 import {
-  //  useEffect,
+  useEffect,
   useState,
   createContext,
   ReactNode,
@@ -8,205 +8,153 @@ import {
 } from 'react'
 //import { setStorage, getStorage } from 'utils/helpers/SirStorage'
 
-interface SidebarDrawerProviderProps {
+interface TreeProviderProps {
   children: ReactNode
 }
 
-type SidebarDrawerContextData = UseDisclosureReturn
+type TreeContextData = UseDisclosureReturn
 
-const SidebarDrawerContext = createContext({} as SidebarDrawerContextData)
+const TreeContext = createContext({} as TreeContextData)
 
-export function SidebarDrawerProvider({
-  children,
-}: SidebarDrawerProviderProps) {
-  const [indeterminateKeys, setIndeterminateKeys] = useState(new Set())
-  const [selectedKeys, setSelectedKeys] = useState(new Set([]))
+export function TreeProvider({ children, data }: TreeProviderProps) {
+  const [dataRef, setDataRef] = useState()
+  const [loading, setLoading] = useState(true)
 
-  /*
-  async function takeIndeterminate(
-    father,
-    fatherLevel,
-    fatherCode,
-    indexCode,
-    childrenLevel,
-    childrenCode
-  ) {
-    if (fatherLevel === childrenLevel) {
-      return
-    }
-    const splitCode = childrenCode.split('-')
-   
-    let nodeChecked = undefined
-    let stop = false
-    for (let i = 0; i < splitCode.length - 1; i++) {
-      nodeChecked = nodeChecked
-        ? `${nodeChecked}-${splitCode[i]}`
-        : splitCode[i]
-      if (!stop) {
-        if (selectedKeys.has(nodeChecked)) {
-          stop = true
-        }
-      } else {
-        if (indeterminateKeys.has(nodeChecked)) {
-          await setIndeterminateKeys(
-            (old) => new Set([...old].filter((x) => x !== nodeChecked))
-          )
-          for (const item of selectedKeys) {
-            if (item.includes(`${nodeChecked}-`)) {
-              await setIndeterminateKeys((old) => new Set(old.add(nodeChecked)))
-            }
+  async function findTheParentAndTakeIndeterminate(children) {
+    const parent = children.parent
+    if (parent) {
+      if (dataRef[parent].checked !== true) {
+        for (let i = 0; i < dataRef[parent].children.length; i++) {
+          const childrenId = dataRef[parent].children[i]
+          if (dataRef[childrenId].checked) {
+            return
           }
         }
-      }
-    }
-    if (stop) {
-      return
-    }
-   
-    setIndeterminateKeys(
-      (old) => new Set([...old].filter((x) => x !== fatherCode))
-    )
-    const newIndexCode = indexCode + 1
-    const newFather = father.children[splitCode[newIndexCode]]
-    const newFatherLevel = newFather.level
-    const newFatherCode = `${fatherCode}-${splitCode[indexCode + 1]}`
-    takeIndeterminate(
-      newFather,
-      newFatherLevel,
-      newFatherCode,
-      newIndexCode,
-      childrenLevel,
-      childrenCode
-    )
-  }
 
-  function putIndeterminate(
-    father,
-    fatherLevel,
-    fatherCode,
-    indexCode,
-    childrenLevel,
-    childrenCode
-  ) {
-    if (fatherLevel === childrenLevel) {
-      return
-    }
-    setIndeterminateKeys((old) => new Set(old.add(fatherCode)))
-    const splitCode = childrenCode.split('-')
-    const newIndexCode = indexCode + 1
-    const newFather = father.children[splitCode[newIndexCode]]
-    const newFatherLevel = newFather.level
-    const newFatherCode = `${fatherCode}-${splitCode[indexCode + 1]}`
-    putIndeterminate(
-      newFather,
-      newFatherLevel,
-      newFatherCode,
-      newIndexCode,
-      childrenLevel,
-      childrenCode
-    )
-  }
-  */
-
-  async function findTheParentAndTakeIndeterminate(code) {
-    const codeSplit = code.split('-')
-    const fatherCode = code.replace(`-${codeSplit[codeSplit.length - 1]}`, '')
-    /*
-    for (const item of selectedKeys) {
-      if (item !== code) {
-        console.log(item.includes(`${fatherCode}-`))
-        if (item.includes(`${fatherCode}-`)) {
-          return
+        const newParent = dataRef[parent]
+        newParent.indeterminate = false
+        setDataRef({ ...dataRef, [parent]: newParent })
+        if (dataRef[parent].parent) {
+          findTheParentAndTakeIndeterminate(dataRef[parent])
         }
       }
     }
-*/
-    setIndeterminateKeys(
-      (old) => new Set([...old].filter((x) => x !== fatherCode))
-    )
-    if (codeSplit.length > 1) {
-      findTheParentAndTakeIndeterminate(fatherCode)
+  }
+
+  async function findTheParentAndPutIndeterminate(children) {
+    const parent = children.parent
+    if (parent) {
+      if (dataRef[parent].checked !== true) {
+        const newParent = dataRef[parent]
+        newParent.indeterminate = true
+        setDataRef({ ...dataRef, [parent]: newParent })
+      }
+      if (dataRef[parent].parent) {
+        findTheParentAndPutIndeterminate(dataRef[parent])
+      }
     }
   }
 
-  async function findTheParentAndPutIndeterminate(code) {
-    const codeSplit = code.split('-')
-    const fatherCode = code.replace(`-${codeSplit[codeSplit.length - 1]}`, '')
-    await setIndeterminateKeys((old) => new Set(old.add(fatherCode)))
-    if (codeSplit.length > 1) {
-      findTheParentAndPutIndeterminate(fatherCode)
+  async function uncheckChildren(father) {
+    for (let i = 0; i < father.children.length; i++) {
+      const childrenId = father.children[i]
+      const newChildren = dataRef[childrenId]
+      newChildren.checked = false
+      setDataRef({ ...dataRef, [childrenId]: newChildren })
+      const hasChild = dataRef[childrenId].children.length > 0 ? true : false
+      if (hasChild) {
+        for (let j = 0; j < dataRef[childrenId].children.length; j++) {
+          uncheckChildren(dataRef[childrenId])
+        }
+      }
     }
-
-    /*
-    const nodeLevel = node[1].level
-    if (nodeLevel === 0) {
-      return
-    }
-    const splitCode = code.split('-')
-    const indexCode = 0
-    const father = data[splitCode[indexCode]]
-    const fatherLevel = 0
-    const fatherCode = splitCode[0]
-    const childrenLevel = node[1].level
-    const childrenCode = code
-    if (put) {
-      return putIndeterminate(
-        father,
-        fatherLevel,
-        fatherCode,
-        indexCode,
-        childrenLevel,
-        childrenCode
-      )
-    }
-    return takeIndeterminate(
-      father,
-      fatherLevel,
-      fatherCode,
-      indexCode,
-      childrenLevel,
-      childrenCode
-    )
-    */
   }
 
-  async function uncheckTheChildren(node, code) {
-    await setSelectedKeys((old) => new Set([...old].filter((x) => x !== code)))
-    await setIndeterminateKeys(
-      (old) => new Set([...old].filter((x) => x !== code))
-    )
-    Object.entries(node[1].children).map((children) => {
-      uncheckTheChildren(children, `${code}-${children[0]}`)
-    })
+  async function checkChildren(father) {
+    for (let i = 0; i < father.children.length; i++) {
+      const childrenId = father.children[i]
+      const newChildren = dataRef[childrenId]
+      newChildren.checked = true
+      setDataRef({ ...dataRef, [childrenId]: newChildren })
+      const hasChild = dataRef[childrenId].children.length > 0 ? true : false
+      if (hasChild) {
+        for (let j = 0; j < dataRef[childrenId].children.length; j++) {
+          checkChildren(dataRef[childrenId])
+        }
+      }
+    }
   }
 
-  async function checkTheChildren(node, code) {
-    await setSelectedKeys((old) => new Set(old.add(code)))
-    Object.entries(node[1].children).map((children) => {
-      checkTheChildren(children, `${code}-${children[0]}`)
-    })
-  }
-
-  async function onSelect(node, code) {
-    if (selectedKeys.has(code)) {
-      uncheckTheChildren(node, code)
-      findTheParentAndTakeIndeterminate(code)
-      //findTheParent(node, code, false)
-      return
+  async function onSelect(id) {
+    const nodeSelected = dataRef[id]
+    dataRef[id].checked = !dataRef[id].checked
+    if (dataRef[id].checked) {
+      checkChildren(nodeSelected)
+      findTheParentAndPutIndeterminate(nodeSelected)
     } else {
-      checkTheChildren(node, code)
-      findTheParentAndPutIndeterminate(code)
-      return
+      uncheckChildren(nodeSelected)
+      findTheParentAndTakeIndeterminate(nodeSelected)
     }
+
+    Object.filter = (obj, predicate) =>
+      Object.keys(obj)
+        .filter((key) => predicate(obj[key]))
+        .reduce((res, key) => ((res[key] = obj[key]), res), {})
+    const selectedKeys = Object.filter(dataRef, (item) => item.checked === true)
+    console.log('selectedKeys: ', selectedKeys)
   }
+
+  useEffect(() => {
+    async function prepareDataRef() {
+      const newData = {}
+
+      async function getChildren(fatherId, children) {
+        newData[fatherId].children.push(children[1].id)
+        newData[children[1].id] = {
+          id: children[1].id,
+          name: children[1].name,
+          level: children[1].level,
+          children: [],
+          parent: fatherId,
+          checked: false,
+          indeterminate: false,
+        }
+        const hasChild =
+          Object.keys(children[1].children).length > 0 ? true : false
+        if (hasChild) {
+          Object.entries(children[1].children).map((newChildren) => {
+            getChildren(children[1].id, newChildren)
+          })
+        }
+      }
+
+      Object.entries(data).map((item) => {
+        newData[item[1].id] = {
+          id: item[1].id,
+          name: item[1].name,
+          level: item[1].level,
+          children: [],
+          checked: false,
+          indeterminate: false,
+        }
+        const hasChild = Object.keys(item[1].children).length > 0 ? true : false
+        if (hasChild) {
+          Object.entries(item[1].children).map((children) => {
+            getChildren(item[1].id, children)
+          })
+        }
+      })
+      setDataRef(newData)
+      setLoading(false)
+    }
+    prepareDataRef()
+  }, [data])
 
   return (
-    <SidebarDrawerContext.Provider
-      value={{ onSelect, selectedKeys, indeterminateKeys }}
-    >
-      {children}
-    </SidebarDrawerContext.Provider>
+    <TreeContext.Provider value={{ onSelect, dataRef }}>
+      {loading ? <p>carregando</p> : children}
+    </TreeContext.Provider>
   )
 }
 
-export const useSidebarDrawer = () => useContext(SidebarDrawerContext)
+export const useTree = () => useContext(TreeContext)

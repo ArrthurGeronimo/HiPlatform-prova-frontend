@@ -1,16 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ChevronRightIcon } from '@chakra-ui/icons'
 import { Box, Flex, Text } from '@chakra-ui/react'
 import Checkbox from 'components/atoms/Checkbox'
-import { SidebarDrawerProvider } from './TreeContext'
-import { useSidebarDrawer } from './TreeContext'
+import { TreeProvider } from './TreeContext'
+import { useTree } from './TreeContext'
 
-const Tree = ({ data = {}, codeNode }) => {
+const Tree = ({ data }) => {
   return (
     <Box>
       <Box as="ul" listStyleType="none" padding={0}>
         {Object.entries(data).map((tree, index) => (
-          <TreeNode key={index} node={tree} codeNode={codeNode || undefined} />
+          <TreeNode key={index} node={tree} />
         ))}
       </Box>
     </Box>
@@ -18,31 +18,11 @@ const Tree = ({ data = {}, codeNode }) => {
 }
 
 const TreeNode = ({ node, codeNode }) => {
-  const { onSelect, selectedKeys, indeterminateKeys } = useSidebarDrawer()
+  const { onSelect, dataRef } = useTree()
   const [childVisible, setChildVisiblity] = useState(false)
-  const [isChecked, setIsChecked] = useState(false)
-  const [isIndeterminate, setIsIndeterminate] = useState(false)
 
   const hasChild = Object.keys(node[1].children).length > 0 ? true : false
   codeNode = codeNode ? `${codeNode}-${node[0]}` : node[0]
-
-  function onChecked(node, codeNode) {
-    setIsChecked(!isChecked)
-    onSelect(node, codeNode)
-  }
-
-  useEffect(() => {
-    if (selectedKeys.has(codeNode)) {
-      setIsIndeterminate(false)
-      return setIsChecked(true)
-    } else {
-      if (indeterminateKeys.has(codeNode)) {
-        return setIsIndeterminate(true)
-      }
-    }
-    setIsIndeterminate(false)
-    setIsChecked(false)
-  }, [codeNode, selectedKeys, indeterminateKeys])
 
   return (
     <Box as="li" padding="0.50rem 1.25rem">
@@ -54,9 +34,9 @@ const TreeNode = ({ node, codeNode }) => {
           />
         )}
         <Checkbox
-          checked={isChecked}
-          indeterminate={isIndeterminate}
-          onChange={() => onChecked(node, codeNode)}
+          checked={dataRef[node[1].id].checked}
+          indeterminate={dataRef[node[1].id].indeterminate}
+          onChange={() => onSelect(node[1].id)}
         />
         <Text>{node[1].name}</Text>
       </Flex>
@@ -74,8 +54,8 @@ const TreeNode = ({ node, codeNode }) => {
 
 export default function MainTree({ data }) {
   return (
-    <SidebarDrawerProvider data={data}>
+    <TreeProvider data={data}>
       <Tree data={data} />
-    </SidebarDrawerProvider>
+    </TreeProvider>
   )
 }
