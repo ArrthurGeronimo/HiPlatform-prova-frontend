@@ -8,8 +8,23 @@ import {
 } from 'react'
 import { setStorage, getStorage } from 'utils/helpers/SirStorage'
 
+interface Metadata {
+  key: string
+  value: unknown
+}
+
+interface MetadataObj {
+  [key: string]: Metadata
+}
+
 interface TreeProviderProps {
   children: ReactNode
+  data: MetadataObj
+}
+
+interface ChildrenProps {
+  children: ReactNode
+  parent: string
 }
 
 type TreeContextData = UseDisclosureReturn
@@ -20,8 +35,9 @@ export function TreeProvider({ children, data }: TreeProviderProps) {
   const [dataRef, setDataRef] = useState()
   const [loading, setLoading] = useState(true)
 
-  async function findTheParent(children) {
+  async function findTheParent(children: ChildrenProps) {
     const parent = children.parent
+    if (!dataRef) return
     if (parent) {
       let numberOfChildrenChecked = 0
       let numberOfChildrenIndeterminate = 0

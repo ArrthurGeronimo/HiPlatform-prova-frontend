@@ -5,7 +5,30 @@ import Checkbox from 'components/atoms/Checkbox'
 import { TreeProvider } from './TreeContext'
 import { useTree } from './TreeContext'
 
-const Tree = ({ data }) => {
+interface Metadata {
+  key: string
+  value: unknown
+}
+
+interface MetadataObj {
+  [key: string]: Metadata
+}
+
+interface TreeProps {
+  data: MetadataObj
+}
+
+interface NodeProps {
+  id: string
+  name: string
+  level: string
+}
+
+interface TreeNodeProps {
+  node: NodeProps
+}
+
+const Tree = ({ data }: TreeProps) => {
   return (
     <Box>
       <Box as="ul" listStyleType="none" padding={0}>
@@ -17,12 +40,11 @@ const Tree = ({ data }) => {
   )
 }
 
-const TreeNode = ({ node, codeNode }) => {
+const TreeNode = ({ node }: TreeNodeProps) => {
   const { onSelect, dataRef } = useTree()
   const [childVisible, setChildVisiblity] = useState(false)
 
   const hasChild = Object.keys(node[1].children).length > 0 ? true : false
-  codeNode = codeNode ? `${codeNode}-${node[0]}` : node[0]
 
   return (
     <Box as="li" padding="0.50rem 1.25rem">
@@ -45,7 +67,7 @@ const TreeNode = ({ node, codeNode }) => {
       {hasChild && childVisible && (
         <Box>
           <Box as="ul" listStyleType="none" padding={0} className="tree">
-            <Tree data={node[1].children} codeNode={codeNode} />
+            <Tree data={node[1].children} />
           </Box>
         </Box>
       )}
@@ -53,7 +75,7 @@ const TreeNode = ({ node, codeNode }) => {
   )
 }
 
-export default function MainTree({ data }) {
+export default function MainTree({ data }: TreeProps) {
   return (
     <TreeProvider data={data}>
       <Tree data={data} />

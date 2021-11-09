@@ -1,6 +1,14 @@
-import { Box } from '@chakra-ui/react'
+import { Box, CheckboxProps } from '@chakra-ui/react'
 
-export default function Checkbox({ onChange, checked, indeterminate }) {
+interface CheckboxCustomProps extends CheckboxProps {
+  indeterminate: boolean
+}
+
+export default function Checkbox({
+  onChange,
+  checked,
+  indeterminate,
+}: CheckboxCustomProps) {
   return (
     <Box
       as="input"
