@@ -6,7 +6,7 @@ import {
   ReactNode,
   useContext,
 } from 'react'
-//import { setStorage, getStorage } from 'utils/helpers/SirStorage'
+import { setStorage, getStorage } from 'utils/helpers/SirStorage'
 
 interface TreeProviderProps {
   children: ReactNode
@@ -20,37 +20,45 @@ export function TreeProvider({ children, data }: TreeProviderProps) {
   const [dataRef, setDataRef] = useState()
   const [loading, setLoading] = useState(true)
 
-  async function findTheParentAndTakeIndeterminate(children) {
+  async function findTheParent(children) {
     const parent = children.parent
     if (parent) {
-      if (dataRef[parent].checked !== true) {
-        for (let i = 0; i < dataRef[parent].children.length; i++) {
-          const childrenId = dataRef[parent].children[i]
-          if (dataRef[childrenId].checked) {
-            return
-          }
+      let numberOfChildrenChecked = 0
+      let numberOfChildrenIndeterminate = 0
+      for (let i = 0; i < dataRef[parent].children.length; i++) {
+        const childrenId = dataRef[parent].children[i]
+        // children unchecked
+        if (dataRef[childrenId].checked) {
+          numberOfChildrenChecked = numberOfChildrenChecked + 1
         }
-
-        const newParent = dataRef[parent]
-        newParent.indeterminate = false
-        setDataRef({ ...dataRef, [parent]: newParent })
-        if (dataRef[parent].parent) {
-          findTheParentAndTakeIndeterminate(dataRef[parent])
+        if (dataRef[childrenId].indeterminate) {
+          numberOfChildrenIndeterminate = numberOfChildrenIndeterminate + 1
         }
       }
-    }
-  }
-
-  async function findTheParentAndPutIndeterminate(children) {
-    const parent = children.parent
-    if (parent) {
-      if (dataRef[parent].checked !== true) {
+      if (numberOfChildrenChecked === 0) {
+        const newParent = dataRef[parent]
+        newParent.indeterminate = false
+        newParent.checked = false
+        setDataRef({ ...dataRef, [parent]: newParent })
+      }
+      if (
+        (numberOfChildrenChecked > 0 &&
+          numberOfChildrenChecked < dataRef[parent].children.length) ||
+        numberOfChildrenIndeterminate > 0
+      ) {
         const newParent = dataRef[parent]
         newParent.indeterminate = true
+        newParent.checked = false
+        setDataRef({ ...dataRef, [parent]: newParent })
+      }
+      if (numberOfChildrenChecked === dataRef[parent].children.length) {
+        const newParent = dataRef[parent]
+        newParent.indeterminate = false
+        newParent.checked = true
         setDataRef({ ...dataRef, [parent]: newParent })
       }
       if (dataRef[parent].parent) {
-        findTheParentAndPutIndeterminate(dataRef[parent])
+        findTheParent(dataRef[parent])
       }
     }
   }
@@ -93,10 +101,10 @@ export function TreeProvider({ children, data }: TreeProviderProps) {
     setDataRef({ ...dataRef, [dataRef[id]]: nodeSelected })
     if (dataRef[id].checked) {
       checkChildren(nodeSelected)
-      findTheParentAndPutIndeterminate(nodeSelected)
+      findTheParent(nodeSelected)
     } else {
       uncheckChildren(nodeSelected)
-      findTheParentAndTakeIndeterminate(nodeSelected)
+      findTheParent(nodeSelected)
     }
 
     Object.filter = (obj, predicate) =>
@@ -108,9 +116,19 @@ export function TreeProvider({ children, data }: TreeProviderProps) {
   }
 
   useEffect(() => {
-    async function prepareDataRef() {
-      const newData = {}
+    if (dataRef) {
+      setStorage('dataRef', JSON.stringify(dataRef))
+    }
+  }, [dataRef])
 
+  useEffect(() => {
+    async function prepareDataRef() {
+      const dataRefStorage = await getStorage('dataRef')
+      if (dataRefStorage) {
+        setDataRef(JSON.parse(dataRefStorage))
+        return setLoading(false)
+      }
+      const newData = {}
       async function getChildren(fatherId, children) {
         newData[fatherId].children.push(children[1].id)
         newData[children[1].id] = {

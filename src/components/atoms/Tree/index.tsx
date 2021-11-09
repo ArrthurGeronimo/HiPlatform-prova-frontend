@@ -30,6 +30,7 @@ const TreeNode = ({ node, codeNode }) => {
         {hasChild && (
           <ChevronRightIcon
             transform={`rotate(${childVisible ? '90deg' : '0deg'})`}
+            color="white"
             //onClick={() => setChildVisiblity((v) => !v)}
           />
         )}
@@ -38,7 +39,7 @@ const TreeNode = ({ node, codeNode }) => {
           indeterminate={dataRef[node[1].id].indeterminate}
           onChange={() => onSelect(node[1].id)}
         />
-        <Text>{node[1].name}</Text>
+        <Text color="white">{node[1].name}</Text>
       </Flex>
 
       {hasChild && childVisible && (
